@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="adminDAO">
+
+	<select id="selectAdminIdPwChk" parameterType="hashmap" resultType="int">
+	select 		/* adminDAO.selectAdminIdPwChk */
+
+			count(*)
+	        
+	from
+	
+			OPORATOR
+	        
+	where 1=1
+	
+			and USE_YN	= 'Y'
+	        and ID 		= #{ID}
+	        and PASS 	= #{PASS}
+	</select>
+	
+	<select id="selectAdminInfo" parameterType="hashmap" resultType="hashmap">
+	select 		/* adminDAO.selectAdminInfo */
+
+			OPORATOR_SEQ,
+			case PARK_SEQ when 0 then (
+										select 
+										
+												PARK_SEQ 
+												
+										from 
+										
+												OPORATOR 
+												
+										where 1=1 
+												
+												and use_yn = 'Y' 
+												
+										order by OPORATOR_SEQ desc 
+										limit 1
+									) else PARK_SEQ end as PARK_SEQ,
+			PARK_SEQ as ADMIN_PARK_SEQ,
+			OPOR_TYPE,
+			ID,
+			OPOR_NAME,
+			EMAIL,
+			TEL,
+			COMPANY,
+			USE_YN,
+			DATE_FORMAT(CREATE_DATE, '%Y-%m-%d %H:%i:%s') CREATE_DATE,
+			DATE_FORMAT(MOD_DATE, '%Y-%m-%d %H:%i:%s') MOD_DATE
+	        
+	from
+	
+			OPORATOR
+	        
+	where 1=1
+	
+			and USE_YN	= 'Y'
+	        and ID 		= #{ID}
+	        and PASS 	= #{PASS}
+	</select>
+	
+	<select id="selectSaleGroupChk" parameterType="hashmap" resultType="int">
+	select 		/* adminDAO.selectSaleGroupChk */
+
+			count(*)
+	        
+	from
+	
+			SALE_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 			= 'Y'
+	        and PARK_SEQ		= #{PARK_SEQ}
+	        and SALE_GRP_CODE 	= #{SALE_GRP_CODE}
+	</select>
+	
+	<select id="selectGiftCardGroupChk" parameterType="hashmap" resultType="int">
+	select 		/* adminDAO.selectGiftCardGroupChk */
+
+			count(*)
+	        
+	from
+	
+			GIFTCARD_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 			= 'Y'
+	        and PARK_SEQ		= #{PARK_SEQ}
+	        and GIFTCARD_GRP_CODE 	= #{GIFTCARD_GRP_CODE}
+	</select>
+	
+	<insert id="insertSaleGroupInfo">
+	insert into SALE_GROUP (		/* adminDAO.insertSaleGroupInfo */
+	
+		SALE_GRP_CODE,
+	    PARK_SEQ,
+	    SALE_GRP_NAME,
+	    USE_YN,
+	    CREATE_DATE
+	    
+	) values(
+	
+		#{SALE_GRP_CODE},
+	    #{PARK_SEQ},
+	    #{SALE_GRP_NAME},
+	    'Y',
+	    NOW()
+	    
+	)
+	</insert>
+	
+	<select id="selectSaleGroupList" parameterType="hashmap" resultType="hashmap">
+	select 		/* adminDAO.selectSaleGroupList */
+
+			SALE_GRP_CODE,
+			SALE_GRP_NAME
+	        
+	from
+	
+			SALE_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 		= 'Y'
+	        and PARK_SEQ	= #{PARK_SEQ}
+	        
+    order by CREATE_DATE DESC
+	</select>
+	
+	<update id="updateSaleGroupInfo">
+	update		/* adminDAO.updateSaleGroupInfo */
+	
+			SALE_GROUP
+	
+	set
+	
+			SALE_GRP_NAME 	= #{SALE_GRP_NAME},
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 			= 'Y'
+			and PARK_SEQ		= #{PARK_SEQ}
+			and SALE_GRP_CODE 	= #{SALE_GRP_CODE}
+	</update>
+	
+	<update id="deleteSaleGroupInfo">
+	update		/* adminDAO.deleteSaleGroupInfo */
+	
+			SALE_GROUP
+	
+	set
+	
+			USE_YN = 'N',
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 			= 'Y'
+			and PARK_SEQ		= #{PARK_SEQ}
+			and SALE_GRP_CODE 	= #{SALE_GRP_CODE}
+	</update>
+	
+	<insert id="insertSaleInfo">
+	insert into SALE(		/* adminDAO.insertSaleInfo */
+		SALE_SEQ,
+	    PARK_SEQ,
+	    SALE_GRP_CODE,
+	    SALE_TYPE,
+	    SALE_COUNT,
+	    USE_YN,
+	    CREATE_DATE
+	) 
+	(
+		select 
+	    
+				case count(*) when 0 then 1 else max(SALE_SEQ) + 1 end,
+				#{PARK_SEQ},
+	            #{SALE_GRP_CODE},
+	            #{SALE_TYPE},
+	            #{SALE_COUNT},
+	            'Y',
+	            NOW()
+	            
+         from
+         
+       			SALE
+	)
+	</insert>
+	
+	<select id="selectSaleList" parameterType="hashmap" resultType="hashmap">
+	select 		/* adminDAO.selectSaleList */
+
+			A.SALE_SEQ,
+			B.SALE_GRP_NAME,
+			A.SALE_TYPE,
+			A.SALE_COUNT
+			
+	        
+	from
+	
+			SALE A,
+			SALE_GROUP B
+	        
+	where 1=1
+	
+			and A.SALE_GRP_CODE 	= B.SALE_GRP_CODE
+			and A.USE_YN 			= 'Y'
+			and B.USE_YN 			= 'Y'
+	        and A.PARK_SEQ			= #{PARK_SEQ}
+	        
+    order by A.SALE_SEQ DESC
+	</select>
+	
+	<update id="updateSaleInfo">
+	update		/* adminDAO.updateSaleInfo */
+	
+			SALE
+	
+	set
+	
+			SALE_TYPE 	= #{SALE_TYPE},
+			SALE_COUNT 	= #{SALE_COUNT},
+			MOD_DATE	= NOW()
+			
+	where 1=1
+	
+			and USE_YN 		= 'Y'
+			and PARK_SEQ	= #{PARK_SEQ}
+			and SALE_SEQ 	= #{SALE_SEQ}
+	</update>
+	
+	<update id="deleteSaleInfo">
+	update		/* adminDAO.deleteSaleInfo */
+	
+			SALE
+	
+	set
+	
+			USE_YN = 'N',
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 		= 'Y'
+			and PARK_SEQ	= #{PARK_SEQ}
+			and SALE_SEQ 	= #{SALE_SEQ}
+	</update>
+	
+	<select id="selecRegularGroupChk" parameterType="hashmap" resultType="int">
+	select 		/* adminDAO.selecRegularGroupChk */
+
+			count(*)
+	        
+	from
+	
+			REGULAR_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 				= 'Y'
+	        and PARK_SEQ			= #{PARK_SEQ}
+	        and REGULAR_GRP_CODE 	= #{REGULAR_GRP_CODE}
+	</select>
+
+	<insert id="insertRegularGroupInfo">
+	insert into REGULAR_GROUP (		/* adminDAO.insertRegularGroupInfo */
+	
+		REGULAR_GRP_CODE,
+	    PARK_SEQ,
+	    REGULAR_GRP_NAME,
+	    REGULAR_MONTH,
+	    REGULAR_PEE,
+	    REGULAR_PERC,
+	    REGULAR_SALE_PEE,
+	    USE_YN,
+	    CREATE_DATE
+	    
+	) values(
+	
+		#{REGULAR_GRP_CODE},
+	    #{PARK_SEQ},
+	    #{REGULAR_GRP_NAME},
+	    #{REGULAR_MONTH},
+	    #{REGULAR_PEE},
+	    #{REGULAR_PERC},
+	    #{REGULAR_SALE_PEE},
+	    'Y',
+	    NOW()
+	    
+	)
+	</insert>
+	
+	<select id="selectRegularGroupList" parameterType="hashmap" resultType="hashmap">
+	select 		/* adminDAO.selectRegularGroupList */
+
+			REGULAR_GRP_CODE,
+			REGULAR_GRP_NAME,
+			REGULAR_MONTH},
+		    REGULAR_PEE,
+		    REGULAR_PERC,
+		    REGULAR_SALE_PEE
+	        
+	from
+	
+			REGULAR_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 		= 'Y'
+	        and PARK_SEQ	= #{PARK_SEQ}
+	        
+    order by CREATE_DATE DESC
+	</select>
+	
+	<update id="updateRegularGroupInfo">
+	update		/* adminDAO.updateRegularGroupInfo */
+	
+			REGULAR_GROUP
+	
+	set
+	
+			REGULAR_GRP_NAME 	= #{REGULAR_GRP_NAME},
+			REGULAR_MONTH		= #{REGULAR_MONTH},
+		    REGULAR_PEE			= #{REGULAR_PEE},
+		    REGULAR_PERC		= #{REGULAR_PERC},
+		    REGULAR_SALE_PEE	= #{REGULAR_SALE_PEE},
+			MOD_DATE			= NOW()
+			
+	where 1=1
+	
+			and USE_YN 				= 'Y'
+			and PARK_SEQ			= #{PARK_SEQ}
+			and REGULAR_GRP_CODE 	= #{REGULAR_GRP_CODE}
+	</update>
+	
+	<update id="deleteRegularGroupInfo">
+	update		/* adminDAO.deleteRegularGroupInfo */
+	
+			REGULAR_GROUP
+	
+	set
+	
+			USE_YN = 'N',
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 				= 'Y'
+			and PARK_SEQ			= #{PARK_SEQ}
+			and REGULAR_GRP_CODE 	= #{REGULAR_GRP_CODE}
+	</update>
+	
+	<insert id="insertGiftCardGroupInfo">
+	insert into GIFTCARD_GROUP (		/* adminDAO.insertGiftCardGroupInfo */
+	
+		GIFTCARD_GRP_CODE,
+	    PARK_SEQ,
+	    GIFTCARD_GRP_NAME,
+	    USE_YN,
+	    CREATE_DATE
+	    
+	) values(
+	
+		#{GIFTCARD_GRP_CODE},
+	    #{PARK_SEQ},
+	    #{GIFTCARD_GRP_NAME},
+	    'Y',
+	    NOW()
+	    
+	)
+	</insert>
+	
+	<select id="selectGiftCardGroupList" parameterType="hashmap" resultType="hashmap">
+	select 		/* adminDAO.selectGiftCardGroupList */
+
+			GIFTCARD_GRP_CODE,
+			GIFTCARD_GRP_NAME
+	        
+	from
+	
+			GIFTCARD_GROUP
+	        
+	where 1=1
+	
+			and USE_YN 		= 'Y'
+	        and PARK_SEQ	= #{PARK_SEQ}
+	        
+    order by CREATE_DATE DESC
+	</select>
+	
+	<update id="updateGiftCardGroupInfo">
+	update		/* adminDAO.updateGiftCardGroupInfo */
+	
+			GIFTCARD_GROUP
+	
+	set
+	
+			GIFTCARD_GRP_NAME 	= #{GIFTCARD_GRP_NAME},
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 			= 'Y'
+			and PARK_SEQ		= #{PARK_SEQ}
+			and GIFTCARD_GRP_CODE 	= #{GIFTCARD_GRP_CODE}
+	</update>
+	
+	<update id="deleteGiftCardGroupInfo">
+	update		/* adminDAO.deleteGiftCardGroupInfo */
+	
+			GIFTCARD_GROUP
+	
+	set
+	
+			USE_YN = 'N',
+			MOD_DATE		= NOW()
+			
+	where 1=1
+	
+			and USE_YN 				= 'Y'
+			and PARK_SEQ			= #{PARK_SEQ}
+			and GIFTCARD_GRP_CODE 	= #{GIFTCARD_GRP_CODE}
+	</update>
+	
+</mapper>
